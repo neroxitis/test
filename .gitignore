@@ -1,0 +1,16 @@
+# python
+*.pyc
+.coverage
+htmlcov
+__pycache__
+
+# pycharm
+.idea
+*/.idea
+
+# files
+*.svg
+*.png
+
+# directories
+images
