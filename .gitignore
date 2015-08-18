@@ -7,10 +7,3 @@ __pycache__
 # pycharm
 .idea
 */.idea
-
-# files
-*.svg
-*.png
-
-# directories
-images
