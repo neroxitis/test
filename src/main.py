@@ -20,6 +20,10 @@ def somebody_won(red_score, blue_score):
         print 'RED WON!'
     elif blue_score == 100:
         print 'BLUE WON!'
+    if red_score == 100 or blue_score == 100:
+        return True
+    else:
+        return False
 
 
 def main():
@@ -146,6 +150,7 @@ def main():
                             board.content(cell.id, player=player)
 
             pg.display.update()
-
+            if somebody_won(red_score, blue_score):
+                exit()
 if __name__ == '__main__':
     main()
