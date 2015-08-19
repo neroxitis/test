@@ -29,7 +29,7 @@ def somebody_won(red_score, blue_score):
 def main():
     pg.init()
     screen = pg.display.set_mode((640, 640), 0, 32)
-    pg.display.set_caption("Liney")
+    pg.display.set_caption("CalcuLines")
 
     board = Board(screen)
     board.draw()
