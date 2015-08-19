@@ -46,7 +46,6 @@ def main():
     pointer_mask.set_at((0, 0), 1)
 
     red = True
-    mouse_cursor = None
     hold = False
     previous = None
     while True:
@@ -62,7 +61,7 @@ def main():
 
             if event.type == MOUSEBUTTONDOWN:
                 pointer.x, pointer.y = pg.mouse.get_pos()
-                for i in range(1, len(board.cell)):
+                for i in range(1, 50):
                     cell = board.cell[i]
                     if cell.rect.colliderect(pointer):
                         print cell.id
@@ -92,9 +91,11 @@ def main():
                                         previous.update(player)
                                         board.screen.blit(previous.image,
                                                           previous.rect)
-                                        board.content(previous.id, player=player)
+                                        board.content(previous.id,
+                                                      player=player)
                                         cell.update('empty')
-                                        board.screen.blit(cell.image, cell.rect)
+                                        board.screen.blit(cell.image,
+                                                          cell.rect)
                                         board.content(cell.id)
                                     else:
                                         previous.update('empty')
@@ -102,7 +103,8 @@ def main():
                                                           previous.rect)
                                         board.content(previous.id)
                                         cell.update(player)
-                                        board.screen.blit(cell.image, cell.rect)
+                                        board.screen.blit(cell.image,
+                                                          cell.rect)
                                         board.content(cell.id, player=player)
                                         new_calculation = cell.operation
 
