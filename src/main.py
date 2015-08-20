@@ -39,6 +39,7 @@ def main():
     no_blue_cells = 0
     red_score = 0
     blue_score = 0
+    board.update_info(red_score=red_score, blue_score=blue_score, player='')
     left, top = pg.mouse.get_pos()
     pointer = pg.Rect(left, top, 1, 1)
     pointer_mask = pg.mask.Mask((1, 1))

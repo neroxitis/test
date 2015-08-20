@@ -17,7 +17,8 @@ IMAGE = {'red': pg.image.load("images/red.png"),
 OPERATORS = ['+', '-', '*', '//']
 NEIGHBOURS = {}
 BLANKER = pg.Surface((280, 30))
-BLANKER.fill(COLOUR['white'])
+PLAYER = pg.Surface((25, 25))
+
 
 
 class Cell(pg.sprite.Sprite):
@@ -48,6 +49,7 @@ class Board(pg.Surface):
         self.screen = screen
         self.font = pg.font.SysFont(None, 25)
         self.info_font = pg.font.SysFont(None, 40)
+        BLANKER.fill(COLOUR['white'])
 
     def update_info(self, red_score=None, blue_score=None, message=None,
                      player=None):
@@ -80,7 +82,17 @@ class Board(pg.Surface):
             )
             self.screen.blit(BLANKER, (660, 320))
             self.screen.blit(message_text, message_rect)
-
+        if player is not None:
+            if player == '' or player == 'blue':
+                PLAYER.fill(COLOUR['black'])
+                self.screen.blit(PLAYER, (620, 220))
+                PLAYER.fill(COLOUR['white'])
+                self.screen.blit(PLAYER, (620, 420))
+            else:
+                PLAYER.fill(COLOUR['black'])
+                self.screen.blit(PLAYER, (620, 420))
+                PLAYER.fill(COLOUR['white'])
+                self.screen.blit(PLAYER, (620, 220))
 
     def content(self, cell_id, player=None):
         cell = self.cell[cell_id]
