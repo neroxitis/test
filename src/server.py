@@ -11,7 +11,7 @@ class ServerChannel(Channel):
 
 
     def Close(self):
-        self._server.DelPlayer(self)
+        self._server.DeletePlayer(self)
 
     # Callbacks #########################################
 
@@ -41,7 +41,13 @@ class CalcuLinesServer(Server):
 
     def Connected(self, channel, addr):
         print 'new connection:', channel
-        channel.Send({"action": "helloc", "message": "hello client!"})
+        self.players[channel] = True
+        channel.Send({"action": "hello", "message": "Hello client!"})
+
+    def DeletePlayer(self, player):
+        print 'player with id', str(player.address), 'has left the game.'
+        player.Send({"action": "bye", "message": "Bye client!"})
+        del self.players[player]
 
     def Launch(self):
         while True:
@@ -51,7 +57,7 @@ class CalcuLinesServer(Server):
 # Get command line argument of server, port
 if len(sys.argv) != 2:
     print "Usage:", sys.argv[0], "host:port"
-    print "e.g.", sys.argv[0], "localhost:31425"
+    print "e.g.", sys.argv[0], "localhost:12345"
 else:
     host, port = sys.argv[1].split(":")
     server = CalcuLinesServer(localaddr=(host, int(port)))
