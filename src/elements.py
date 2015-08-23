@@ -20,7 +20,6 @@ BLANKER = pg.Surface((280, 30))
 PLAYER = pg.Surface((25, 25))
 
 
-
 class Cell(pg.sprite.Sprite):
     """ The ball """
     def __init__(self, colour, coord, pos):
@@ -128,6 +127,8 @@ class Board(pg.Surface):
         cell_image.set_colorkey(cell_image.get_at((0, 0)))
         radius = 30
         self.screen.fill((255, 255, 255))
+
+        # Draw vertical lines
         pos = [54, 54]
         for _ in range(7):
             pg.draw.line(self.screen,
@@ -137,6 +138,7 @@ class Board(pg.Surface):
                          2)
             pos[0] += 87
 
+        # Draw horizontal lines
         pos = [54, 54]
         for _ in range(7):
             pg.draw.line(self.screen,
@@ -146,8 +148,62 @@ class Board(pg.Surface):
                          2)
             pos[1] += 87
 
-        pos = [30, 30]
+        # Draw back slashes
+        pos = [54, 487]
+        diag_len = 87
+        for _ in range(6):
+            pg.draw.line(
+                self.screen,
+                COLOUR['black'],
+                (pos[0], pos[1]),
+                (pos[0]+diag_len, pos[1]+diag_len),
+                2)
+            pos[0] = 54
+            pos[1] -= 87
+            diag_len += 87
 
+        pos = [141, 54]
+        diag_len = 433
+        for _ in range(6):
+            pg.draw.line(
+                self.screen,
+                COLOUR['black'],
+                (pos[0], pos[1]),
+                (pos[0]+diag_len, pos[1]+diag_len),
+                2)
+            pos[0] += 87
+            pos[1] = 54
+            diag_len -= 87
+
+        # Draw slashes
+        pos = [54, 574]
+        diag_len = 520
+        for _ in range(6):
+            pg.draw.line(
+                self.screen,
+                COLOUR['black'],
+                (pos[0], pos[1]),
+                (pos[0]+diag_len, pos[1]-diag_len),
+                2)
+            pos[0] = 54
+            pos[1] -= 87
+            diag_len -= 87
+
+        pos = [574, 141]
+        diag_len = 433
+        for _ in range(6):
+            pg.draw.line(
+                self.screen,
+                COLOUR['black'],
+                (pos[0], pos[1]),
+                (pos[0]-diag_len, pos[1]+diag_len),
+                2)
+            pos[0] = 574
+            pos[1] += 84
+            diag_len -= 87
+
+        # Draw cells
+        pos = [30, 30]
         for x in range(7):
             for y in range(7):
                 cell = Cell('empty', pos, (x, y))
