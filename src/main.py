@@ -1,18 +1,19 @@
 import pygame as pg
 from pygame.locals import *
-from sys import exit
+import sys
 from PodSixNet.Connection import ConnectionListener, connection
-from time import time
+from time import sleep
 
 from elements import Board, NEIGHBOURS
+
+pg.init()
+screen = pg.display.set_mode((900, 640), 0, 32)
+pg.display.set_caption("CalcuLines")
 
 
 class CalcuLinesGame(ConnectionListener):
 
-    def __init__(self):
-        pg.init()
-        self.screen = pg.display.set_mode((900, 640), 0, 32)
-        pg.display.set_caption("CalcuLines")
+    def __init__(self, host, port):
 
         left, top = pg.mouse.get_pos()
         self.pointer = pg.Rect(left, top, 1, 1)
@@ -25,9 +26,10 @@ class CalcuLinesGame(ConnectionListener):
         self.red = True
         self.hold = False
         self.previous = None
-        self.board = Board(self.screen)
+        self.board = Board(screen)
+        self.player = None
 
-        self.Connect()
+        self.Connect((host, port))
 
     def draw(self):
         self.board.draw()
@@ -56,133 +58,23 @@ class CalcuLinesGame(ConnectionListener):
         else:
             return False
 
-    def Events(self):
+    def events(self):
         while True:
+            connection.Pump()
+            self.Pump()
+
             for event in pg.event.get():
                 if event.type == QUIT:
-                    exit()
+                    self.Exit(event)
+                    sys.exit()
 
                 if self.red:
-                    player = "red"
+                    self.player = "red"
                 else:
-                    player = "blue"
+                    self.player = "blue"
 
                 if event.type == MOUSEBUTTONDOWN:
-                    self.board.update_info(message="")
-                    self.pointer.x, self.pointer.y = pg.mouse.get_pos()
-                    for i in range(1, 50):
-                        cell = self.board.cell[i]
-                        if cell.rect.colliderect(self.pointer):
-                            connection.Send({"action": "myaction",
-                                       "cell_id": cell.id,
-                                       "pointer_x": self.pointer.x,
-                                       "pointer_y": self.pointer.y})
-                            if self.no_red_cells == self.no_blue_cells == 5:
-                                if not self.hold:
-                                    if cell.colour == 'empty':
-                                        self.board.update_info(
-                                            message='There is no piece here!')
-                                    elif cell.colour != player:
-                                        self.board.update_info(
-                                            message='Choose a piece you own!')
-                                    else:
-                                        self.board.update_info(
-                                            message="That's right!")
-                                        self.previous = cell
-                                        self.hold = True
-                                        self.board.content(self.previous.id,
-                                                           'green')
-                                    break
-                                else:
-                                    if cell.colour == 'empty':
-                                        self.previous.update('empty')
-                                        self.board.screen.blit(
-                                            self.previous.image,
-                                            self.previous.rect)
-                                        self.board.content(self.previous.id)
-                                        cell.update(player)
-                                        self.board.screen.blit(
-                                            cell.image, cell.rect)
-                                        self.board.content(cell.id,
-                                                           player=player)
-                                        if self.board.find_clusters(cell.id,
-                                                                    player):
-                                            self.board.update_info(
-                                                message="Don't leave "
-                                                        "isolated cells!")
-                                            self.previous.update(player)
-                                            self.board.screen.blit(
-                                                self.previous.image,
-                                                self.previous.rect)
-                                            self.board.content(
-                                                self.previous.id,
-                                                player=player)
-                                            cell.update('empty')
-                                            self.board.screen.blit(
-                                                cell.image,
-                                                cell.rect)
-                                            self.board.content(cell.id)
-                                        else:
-                                            self.previous.update('empty')
-                                            self.board.screen.blit(
-                                                self.previous.image,
-                                                self.previous.rect)
-                                            self.board.content(
-                                                self.previous.id)
-                                            cell.update(player)
-                                            self.board.screen.blit(cell.image,
-                                                                   cell.rect)
-                                            self.board.content(cell.id,
-                                                               player=player)
-                                            new_calculation = cell.operation
-
-                                            self.update_score(new_calculation)
-
-                                            self.red = not self.red
-                                            self.hold = False
-
-                                    elif cell.id == self.previous.id:
-                                        self.hold = False
-                                        self.board.content(
-                                            self.previous.id,
-                                            player=player)
-                                    else:
-                                        self.board.update_info(
-                                            message="Occupied cell!")
-                                    break
-
-                            else:
-                                if cell.colour != 'empty':
-                                    self.board.update_info(
-                                        message='There is no piece here!')
-                                    break
-                                own_neighbours = sum(
-                                    [1 for neighbour in NEIGHBOURS[cell.id]
-                                     if self.board.cell[
-                                        neighbour].colour == player])
-                                if self.red:
-                                    if (self.no_red_cells == 0 or
-                                            own_neighbours >= 1):
-                                        self.no_red_cells += 1
-                                        new_calculation = cell.operation
-                                    else:
-                                        self.board.update_info(
-                                            message='No isolated pieces!')
-                                        break
-                                else:
-                                    if (self.no_blue_cells == 0 or
-                                            own_neighbours >= 1):
-                                        self.no_blue_cells += 1
-                                        new_calculation = cell.operation
-                                    else:
-                                        self.board.update_info(
-                                            message='No isolated pieces!')
-                                        break
-                                cell.update(player)
-                                self.update_score(new_calculation)
-                                self.red = not self.red
-                                self.board.screen.blit(cell.image, cell.rect)
-                                self.board.content(cell.id, player=player)
+                    self.MouseButtonDown()
 
                 if self.somebody_won():
                     pg.display.update()
@@ -190,7 +82,140 @@ class CalcuLinesGame(ConnectionListener):
                     exit()
                 pg.display.update()
 
+    def Network_helloc(self, data):
+        print data['message']
+
+    def MouseButtonDown(self):
+        self.board.update_info(message="")
+        self.pointer.x, self.pointer.y = pg.mouse.get_pos()
+        for i in range(1, 50):
+            cell = self.board.cell[i]
+            if cell.rect.colliderect(self.pointer):
+                connection.Send({"action": "myaction",
+                           "cell_id": cell.id,
+                           "pointer_x": self.pointer.x,
+                           "pointer_y": self.pointer.y})
+                if self.no_red_cells == self.no_blue_cells == 5:
+                    if not self.hold:
+                        if cell.colour == 'empty':
+                            self.board.update_info(
+                                message='There is no piece here!')
+                        elif cell.colour != self.player:
+                            self.board.update_info(
+                                message='Choose a piece you own!')
+                        else:
+                            self.board.update_info(
+                                message="That's right!")
+                            self.previous = cell
+                            self.hold = True
+                            self.board.content(self.previous.id,
+                                               'green')
+                        break
+                    else:
+                        if cell.colour == 'empty':
+                            self.previous.update('empty')
+                            self.board.screen.blit(
+                                self.previous.image,
+                                self.previous.rect)
+                            self.board.content(self.previous.id)
+                            cell.update(self.player)
+                            self.board.screen.blit(
+                                cell.image, cell.rect)
+                            self.board.content(cell.id,
+                                               player=self.player)
+                            if self.board.find_clusters(cell.id,
+                                                        self.player):
+                                self.board.update_info(
+                                    message="Don't leave "
+                                            "isolated cells!")
+                                self.previous.update(self.player)
+                                self.board.screen.blit(
+                                    self.previous.image,
+                                    self.previous.rect)
+                                self.board.content(
+                                    self.previous.id,
+                                    player=self.player)
+                                cell.update('empty')
+                                self.board.screen.blit(
+                                    cell.image,
+                                    cell.rect)
+                                self.board.content(cell.id)
+                            else:
+                                self.previous.update('empty')
+                                self.board.screen.blit(
+                                    self.previous.image,
+                                    self.previous.rect)
+                                self.board.content(
+                                    self.previous.id)
+                                cell.update(self.player)
+                                self.board.screen.blit(cell.image,
+                                                       cell.rect)
+                                self.board.content(cell.id,
+                                                   player=self.player)
+                                new_calculation = cell.operation
+
+                                self.update_score(new_calculation)
+
+                                self.red = not self.red
+                                self.hold = False
+
+                        elif cell.id == self.previous.id:
+                            self.hold = False
+                            self.board.content(
+                                self.previous.id,
+                                player=self.player)
+                        else:
+                            self.board.update_info(
+                                message="Occupied cell!")
+                        break
+
+                else:
+                    if cell.colour != 'empty':
+                        self.board.update_info(
+                            message='There is no piece here!')
+                        break
+                    own_neighbours = sum(
+                        [1 for neighbour in NEIGHBOURS[cell.id]
+                         if self.board.cell[
+                            neighbour].colour == self.player])
+                    if self.red:
+                        if (self.no_red_cells == 0 or
+                                own_neighbours >= 1):
+                            self.no_red_cells += 1
+                            new_calculation = cell.operation
+                        else:
+                            self.board.update_info(
+                                message='No isolated pieces!')
+                            break
+                    else:
+                        if (self.no_blue_cells == 0 or
+                                own_neighbours >= 1):
+                            self.no_blue_cells += 1
+                            new_calculation = cell.operation
+                        else:
+                            self.board.update_info(
+                                message='No isolated pieces!')
+                            break
+                    cell.update(self.player)
+                    self.update_score(new_calculation)
+                    self.red = not self.red
+                    self.board.screen.blit(cell.image, cell.rect)
+                    self.board.content(cell.id, player=self.player)
+    def Loop(self):
+        self.Pump()
+        connection.Pump()
+        self.draw()
+        self.events()
+
+
 if __name__ == '__main__':
-    clgame = CalcuLinesGame()
-    clgame.draw()
-    clgame.Events()
+    if len(sys.argv) != 2:
+        print "Usage:", sys.argv[0], "host:port"
+        print "e.g.", sys.argv[0], "localhost:31425"
+    else:
+        host, port = sys.argv[1].split(":")
+        clgame = CalcuLinesGame(host, int(port))
+        connection.Send({"action": "hello", "message": "Hello Server!!"})
+        while True:
+            clgame.Loop()
+            sleep(0.001)
