@@ -10,7 +10,8 @@ COLOUR = {'red': (255, 0, 0),
           'blue': (0, 0, 255),
           'white': (255, 255, 255),
           'green': (0, 255, 0),
-          'black': (0, 0, 0)}
+          'black': (0, 0, 0),
+          'grey': (180, 180, 180)}
 IMAGE = {'red': pg.image.load("images/red.png"),
          'blue': pg.image.load("images/blue.png"),
          'empty': pg.image.load("images/empty.png")}
@@ -132,7 +133,7 @@ class Board(pg.Surface):
         pos = [54, 54]
         for _ in range(7):
             pg.draw.line(self.screen,
-                         COLOUR['black'],
+                         COLOUR['grey'],
                          (pos[0], pos[1]),
                          (pos[0], pos[1]+520),
                          2)
@@ -142,7 +143,7 @@ class Board(pg.Surface):
         pos = [54, 54]
         for _ in range(7):
             pg.draw.line(self.screen,
-                         COLOUR['black'],
+                         COLOUR['grey'],
                          (pos[0], pos[1]),
                          (pos[0]+520, pos[1]),
                          2)
@@ -154,7 +155,7 @@ class Board(pg.Surface):
         for _ in range(6):
             pg.draw.line(
                 self.screen,
-                COLOUR['black'],
+                COLOUR['grey'],
                 (pos[0], pos[1]),
                 (pos[0]+diag_len, pos[1]+diag_len),
                 2)
@@ -167,7 +168,7 @@ class Board(pg.Surface):
         for _ in range(6):
             pg.draw.line(
                 self.screen,
-                COLOUR['black'],
+                COLOUR['grey'],
                 (pos[0], pos[1]),
                 (pos[0]+diag_len, pos[1]+diag_len),
                 2)
@@ -181,7 +182,7 @@ class Board(pg.Surface):
         for _ in range(6):
             pg.draw.line(
                 self.screen,
-                COLOUR['black'],
+                COLOUR['grey'],
                 (pos[0], pos[1]),
                 (pos[0]+diag_len, pos[1]-diag_len),
                 2)
@@ -194,7 +195,7 @@ class Board(pg.Surface):
         for _ in range(6):
             pg.draw.line(
                 self.screen,
-                COLOUR['black'],
+                COLOUR['grey'],
                 (pos[0], pos[1]),
                 (pos[0]-diag_len, pos[1]+diag_len),
                 2)
