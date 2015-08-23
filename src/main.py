@@ -65,8 +65,7 @@ class CalcuLinesGame(ConnectionListener):
 
             for event in pg.event.get():
                 if event.type == QUIT:
-                    self.Exit(event)
-                    sys.exit()
+                    self.exit()
 
                 if self.red:
                     self.player = "red"
@@ -74,7 +73,7 @@ class CalcuLinesGame(ConnectionListener):
                     self.player = "blue"
 
                 if event.type == MOUSEBUTTONDOWN:
-                    self.MouseButtonDown()
+                    self.mouse_button_down()
 
                 if self.somebody_won():
                     pg.display.update()
@@ -82,10 +81,17 @@ class CalcuLinesGame(ConnectionListener):
                     exit()
                 pg.display.update()
 
-    def Network_helloc(self, data):
+    def Network_hello(self, data):
         print data['message']
 
-    def MouseButtonDown(self):
+    def Network_bye(self, data):
+        print data['message']
+
+    def exit(self):
+        connection.Send({"action": "exit"})
+        sys.exit()
+
+    def mouse_button_down(self):
         self.board.update_info(message="")
         self.pointer.x, self.pointer.y = pg.mouse.get_pos()
         for i in range(1, 50):
@@ -201,7 +207,8 @@ class CalcuLinesGame(ConnectionListener):
                     self.red = not self.red
                     self.board.screen.blit(cell.image, cell.rect)
                     self.board.content(cell.id, player=self.player)
-    def Loop(self):
+
+    def loop(self):
         self.Pump()
         connection.Pump()
         self.draw()
@@ -211,11 +218,11 @@ class CalcuLinesGame(ConnectionListener):
 if __name__ == '__main__':
     if len(sys.argv) != 2:
         print "Usage:", sys.argv[0], "host:port"
-        print "e.g.", sys.argv[0], "localhost:31425"
+        print "e.g.", sys.argv[0], "localhost:12345"
     else:
         host, port = sys.argv[1].split(":")
         clgame = CalcuLinesGame(host, int(port))
         connection.Send({"action": "hello", "message": "Hello Server!!"})
         while True:
-            clgame.Loop()
+            clgame.loop()
             sleep(0.001)
