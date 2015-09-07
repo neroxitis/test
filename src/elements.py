@@ -20,6 +20,7 @@ NEIGHBOURS = {}
 BLANKER = pg.Surface((280, 30))
 PLAYER = pg.Surface((25, 25))
 
+screen = pg.display.set_mode((900, 640), 0, 32)
 
 class Cell(pg.sprite.Sprite):
     """ The ball """

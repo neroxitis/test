@@ -26,7 +26,7 @@ class CalcuLinesGame(ConnectionListener):
         self.red = True
         self.hold = False
         self.previous = None
-        self.board = Board(screen)
+        self.board = None
         self.player = None
 
         self.Connect((host, port))
@@ -86,6 +86,8 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_startgame(self, data):
         self.player = data["player"]
+        self.board = data['board']
+        self.board.update_info()
         if self.player == data['turn']:
             print("It's your turn!")
         else:

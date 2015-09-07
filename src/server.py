@@ -3,6 +3,7 @@ from PodSixNet.Server import Server
 from time import sleep
 import sys
 
+from elements import Board, screen
 
 class ServerChannel(Channel):
     def __init__(self, *args, **kwargs):
@@ -39,6 +40,7 @@ class CalcuLinesServer(Server):
         self.players = {}
         print 'CalcuLines Server launched!'
         self.game = None
+        self.board = None
 
     def Connected(self, channel, addr):
         print 'new connection:', channel
@@ -46,16 +48,21 @@ class CalcuLinesServer(Server):
         channel.Send({"action": "hello", "message": "Hello client!"})
         if self.game is None:
             self.game = Game(channel)
+            self.board = Board(screen)
         else:
             self.game.blueplayer = channel
             self.game.redplayer.Send({"action": "hello",
                                       "message": "You are the red player."})
             self.game.blueplayer.Send({"action": "hello",
                                       "message": "You are the blue player."})
-            self.game.redplayer.Send({"action": "startgame", "player": "red",
-                                      "turn": "red"})
+            self.game.redplayer.Send({"action": "startgame",
+                                      "player": "red",
+                                      "turn": "red",
+                                      "board": self.board})
             self.game.blueplayer.Send({"action": "startgame",
-                                        "player": "blue", "turn": "red"})
+                                       "player": "blue",
+                                       "turn": "red",
+                                       "board": self.board})
 
     def DeletePlayer(self, player):
         print 'player with id', str(player.address), 'has left the game.'
