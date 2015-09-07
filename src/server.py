@@ -48,9 +48,14 @@ class CalcuLinesServer(Server):
             self.game = Game(channel)
         else:
             self.game.blueplayer = channel
-            self.game.redplayer.Send({"action": "startgame", "player": "red"})
+            self.game.redplayer.Send({"action": "hello",
+                                      "message": "You are the red player."})
+            self.game.blueplayer.Send({"action": "hello",
+                                      "message": "You are the blue player."})
+            self.game.redplayer.Send({"action": "startgame", "player": "red",
+                                      "turn": "red"})
             self.game.blueplayer.Send({"action": "startgame",
-                                        "player": "blue"})
+                                        "player": "blue", "turn": "red"})
 
     def DeletePlayer(self, player):
         print 'player with id', str(player.address), 'has left the game.'
@@ -69,7 +74,6 @@ class Game:
         self.turn = 'red'
         self.redplayer = redplayer
         self.blueplayer = None
-
 
 # Get command line argument of server, port
 if len(sys.argv) != 2:

@@ -86,6 +86,10 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_startgame(self, data):
         self.player = data["player"]
+        if self.player == data['turn']:
+            print("It's your turn!")
+        else:
+            print("Wait for your opponents turn!")
 
     def Network_bye(self, data):
         print data['message']
