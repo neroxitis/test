@@ -84,6 +84,9 @@ class CalcuLinesGame(ConnectionListener):
     def Network_hello(self, data):
         print data['message']
 
+    def Network_startgame(self, data):
+        self.player = data["player"]
+
     def Network_bye(self, data):
         print data['message']
 

@@ -38,11 +38,19 @@ class CalcuLinesServer(Server):
         Server.__init__(self, *args, **kwargs)
         self.players = {}
         print 'CalcuLines Server launched!'
+        self.game = None
 
     def Connected(self, channel, addr):
         print 'new connection:', channel
         self.players[channel] = True
         channel.Send({"action": "hello", "message": "Hello client!"})
+        if self.game is None:
+            self.game = Game(channel)
+        else:
+            self.game.blueplayer = channel
+            self.game.redplayer.Send({"action": "startgame", "player": "red"})
+            self.game.blueplayer.Send({"action": "startgame",
+                                        "player": "blue"})
 
     def DeletePlayer(self, player):
         print 'player with id', str(player.address), 'has left the game.'
@@ -53,6 +61,15 @@ class CalcuLinesServer(Server):
         while True:
             self.Pump()
             sleep(0.0001)
+
+
+class Game:
+    def __init__(self, redplayer):
+        # 'red' or 'blue'
+        self.turn = 'red'
+        self.redplayer = redplayer
+        self.blueplayer = None
+
 
 # Get command line argument of server, port
 if len(sys.argv) != 2:
