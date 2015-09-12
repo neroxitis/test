@@ -12,14 +12,19 @@ COLOUR = {'red': (255, 0, 0),
           'green': (0, 255, 0),
           'black': (0, 0, 0),
           'grey': (180, 180, 180)}
-IMAGE = {'red': pg.image.load("../images/red.png"),
-         'blue': pg.image.load("../images/blue.png"),
-         'empty': pg.image.load("../images/empty.png")}
+IMAGE = {'red': pg.image.load(
+    "/home/nikos/PycharmProjects/CalcuLines/images/red.png"),
+         'blue': pg.image.load(
+             "/home/nikos/PycharmProjects/CalcuLines/images/blue.png"),
+         'empty': pg.image.load(
+             "/home/nikos/PycharmProjects/CalcuLines/images/empty.png")}
 OPERATORS = ['+', '-', '*', '//']
 NEIGHBOURS = {}
 BLANKER = pg.Surface((280, 30))
 PLAYER = pg.Surface((25, 25))
 
+pg.init()
+pg.font.init()
 screen = pg.display.set_mode((900, 640), 0, 32)
 
 class Cell(pg.sprite.Sprite):
@@ -51,6 +56,7 @@ class Board(pg.Surface):
         self.font = pg.font.SysFont(None, 25)
         self.info_font = pg.font.SysFont(None, 40)
         BLANKER.fill(COLOUR['white'])
+        self.board_content = {}
 
     def update_info(self, red_score=None, blue_score=None, message=None,
                      player=None):
@@ -125,6 +131,7 @@ class Board(pg.Surface):
         cell.colour = colour
 
     def draw(self):
+        board_content = {}
         cell_image = IMAGE['empty']
         cell_image.set_colorkey(cell_image.get_at((0, 0)))
         radius = 30
@@ -210,6 +217,7 @@ class Board(pg.Surface):
             for y in range(7):
                 cell = Cell('empty', pos, (x, y))
                 self.add_cell(cell, x, y)
+                board_content.update({cell.id: cell.operation})
                 self.screen.blit(cell.image, cell.rect)
                 self.content(cell.id)
                 pos[0] += 2*radius+27
@@ -218,6 +226,7 @@ class Board(pg.Surface):
             pos[1] += 2*radius+27
         pg.display.update()
         pg.display.flip()
+        return board_content
 
     def populate_neighbours_dic(self):
         for id in self.cell.keys():

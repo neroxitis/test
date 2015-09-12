@@ -1,3 +1,4 @@
+import pygame as pg
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
 from time import sleep
@@ -21,6 +22,9 @@ class ServerChannel(Channel):
 
     def Network_hello(self, data):
         print 'message=', data['message']
+        if data['board'] != '':
+            print data['board']
+            self._server.board = data['board']
 
     def Network_nickname(self, data):
         print 'nickname=', data['nickname']
@@ -45,24 +49,22 @@ class CalcuLinesServer(Server):
     def Connected(self, channel, addr):
         print 'new connection:', channel
         self.players[channel] = True
-        channel.Send({"action": "hello", "message": "Hello client!"})
         if self.game is None:
             self.game = Game(channel)
-            self.board = Board(screen)
+            self.game.redplayer.Send({"action": "hello",
+                                      "message": "Hello red player!",
+                                      "board": ''})
         else:
             self.game.blueplayer = channel
-            self.game.redplayer.Send({"action": "hello",
-                                      "message": "You are the red player."})
             self.game.blueplayer.Send({"action": "hello",
-                                      "message": "You are the blue player."})
+                                       "message": "Hello blue player!",
+                                       "board": self.board})
             self.game.redplayer.Send({"action": "startgame",
                                       "player": "red",
-                                      "turn": "red",
-                                      "board": self.board})
+                                      "whoplays": "red"})
             self.game.blueplayer.Send({"action": "startgame",
                                        "player": "blue",
-                                       "turn": "red",
-                                       "board": self.board})
+                                       "whoplays": "red"})
 
     def DeletePlayer(self, player):
         print 'player with id', str(player.address), 'has left the game.'
@@ -81,6 +83,7 @@ class Game:
         self.turn = 'red'
         self.redplayer = redplayer
         self.blueplayer = None
+        self.board = None
 
 # Get command line argument of server, port
 if len(sys.argv) != 2:

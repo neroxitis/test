@@ -1,20 +1,23 @@
 import pygame as pg
 from pygame.locals import *
 import sys
+import copy
 from PodSixNet.Connection import ConnectionListener, connection
 from time import sleep
 
-from elements import Board, NEIGHBOURS
+from elements import NEIGHBOURS, Board, screen
+
+pg.display.set_caption("CalcuLines")
 
 pg.init()
-screen = pg.display.set_mode((900, 640), 0, 32)
-pg.display.set_caption("CalcuLines")
+pg.font.init()
 
 
 class CalcuLinesGame(ConnectionListener):
 
     def __init__(self, host, port):
 
+        self.screen = pg.display.set_mode((900, 640), 0, 32)
         left, top = pg.mouse.get_pos()
         self.pointer = pg.Rect(left, top, 1, 1)
         self.pointer_mask = pg.mask.Mask((1, 1))
@@ -28,8 +31,23 @@ class CalcuLinesGame(ConnectionListener):
         self.previous = None
         self.board = None
         self.player = None
+        self.playing = False
 
         self.Connect((host, port))
+
+        while not self.playing:
+            self.Pump()
+            connection.Pump()
+            sleep(0.01)
+
+        if self.player == self.whoplays:
+            self.turn = True
+            print("It's your turn!")
+        else:
+            self.turn = False
+            print("Wait for your opponents turn!")
+
+        self.board.update_info(player=self.player)
 
     def draw(self):
         self.board.draw()
@@ -83,18 +101,29 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_hello(self, data):
         print data['message']
+        if data['board'] == '':
+            self.board = Board(screen)
+            board = self.board
+            connection.Send({"action": "hello", "message": "Hello Server!!",
+                                            "board": board})
+        else:
+            self.board = data['board']
+        self.draw()
 
     def Network_startgame(self, data):
+        self.playing = True
         self.player = data["player"]
-        self.board = data['board']
+        self.whoplays = data['whoplays']
         self.board.update_info()
-        if self.player == data['turn']:
-            print("It's your turn!")
-        else:
-            print("Wait for your opponents turn!")
+
+    def Network_isturn(self, data):
+        self.turn = data['turn']
 
     def Network_bye(self, data):
         print data['message']
+
+    def Network_close(self, data):
+        exit()
 
     def exit(self):
         connection.Send({"action": "exit"})
@@ -218,8 +247,10 @@ class CalcuLinesGame(ConnectionListener):
                     self.board.content(cell.id, player=self.player)
 
     def loop(self):
-        self.Pump()
         connection.Pump()
+        self.Pump()
+        self.draw()
+        self.events()
         self.draw()
         self.events()
 
@@ -231,7 +262,7 @@ if __name__ == '__main__':
     else:
         host, port = sys.argv[1].split(":")
         clgame = CalcuLinesGame(host, int(port))
-        connection.Send({"action": "hello", "message": "Hello Server!!"})
+
         while True:
             clgame.loop()
             sleep(0.001)
