@@ -1,16 +1,12 @@
-import pygame as pg
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
 from time import sleep
 import sys
 
-from elements import Board, screen
 
 class ServerChannel(Channel):
     def __init__(self, *args, **kwargs):
-        self.nickname = "anonymous"
         Channel.__init__(self, *args, **kwargs)
-
 
     def Close(self):
         self._server.DeletePlayer(self)
@@ -23,11 +19,8 @@ class ServerChannel(Channel):
     def Network_hello(self, data):
         print 'message=', data['message']
         if data['board'] != '':
-            print data['board']
-            self._server.board = data['board']
-
-    def Network_nickname(self, data):
-        print 'nickname=', data['nickname']
+            board = data['board']
+            self._server.SetBoard(board)
 
     def Network_mousedown(self, data):
         print 'action:', data['action']
@@ -53,7 +46,7 @@ class CalcuLinesServer(Server):
             self.game = Game(channel)
             self.game.redplayer.Send({"action": "hello",
                                       "message": "Hello red player!",
-                                      "board": ''})
+                                      "board": ""})
         else:
             self.game.blueplayer = channel
             self.game.blueplayer.Send({"action": "hello",
@@ -71,6 +64,10 @@ class CalcuLinesServer(Server):
         player.Send({"action": "bye", "message": "Bye client!"})
         del self.players[player]
 
+    def SetBoard(self, board):
+        self.board = board
+        pass
+
     def Launch(self):
         while True:
             self.Pump()
@@ -83,7 +80,6 @@ class Game:
         self.turn = 'red'
         self.redplayer = redplayer
         self.blueplayer = None
-        self.board = None
 
 # Get command line argument of server, port
 if len(sys.argv) != 2:

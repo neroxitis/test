@@ -29,14 +29,15 @@ screen = pg.display.set_mode((900, 640), 0, 32)
 
 class Cell(pg.sprite.Sprite):
     """ The ball """
-    def __init__(self, colour, coord, pos):
+    def __init__(self, colour, coord, pos, operation=None):
         pg.sprite.Sprite.__init__(self)
         self.id = 0
         self.x_pos, self.y_pos = pos
         self.x, self.y = coord
         self.colour = colour
         self.update(colour)
-        self.operation = OPERATORS[randint(0, 3)] + str(randint(1, 10))
+        self.operation = operation or \
+                         OPERATORS[randint(0, 3)] + str(randint(1, 10))
 
     def update(self, colour):
         self.colour = colour
@@ -130,8 +131,7 @@ class Board(pg.Surface):
     def change_cell(self, cell, colour):
         cell.colour = colour
 
-    def draw(self):
-        board_content = {}
+    def draw(self, existing_board_content=None):
         cell_image = IMAGE['empty']
         cell_image.set_colorkey(cell_image.get_at((0, 0)))
         radius = 30
@@ -211,22 +211,31 @@ class Board(pg.Surface):
             pos[1] += 84
             diag_len -= 87
 
+
         # Draw cells
+        if existing_board_content is None:
+            board_content = {}
+
         pos = [30, 30]
         for x in range(7):
             for y in range(7):
-                cell = Cell('empty', pos, (x, y))
-                self.add_cell(cell, x, y)
-                board_content.update({cell.id: cell.operation})
+                if existing_board_content is None:
+                    cell = Cell('empty', pos, (x, y))
+                    self.add_cell(cell, x, y)
+                    board_content.update({cell.id: cell.operation})
+                else:
+                    id = x*7+y+1
+                    cell = Cell('empty', pos, (x, y),
+                                operation=existing_board_content[id])
+                    self.add_cell(cell, x, y)
                 self.screen.blit(cell.image, cell.rect)
                 self.content(cell.id)
                 pos[0] += 2*radius+27
-
             pos[0] = 30
             pos[1] += 2*radius+27
         pg.display.update()
         pg.display.flip()
-        return board_content
+        return board_content if existing_board_content is None else None
 
     def populate_neighbours_dic(self):
         for id in self.cell.keys():

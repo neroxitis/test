@@ -32,6 +32,7 @@ class CalcuLinesGame(ConnectionListener):
         self.board = None
         self.player = None
         self.playing = False
+        self.existing_board_content = None
 
         self.Connect((host, port))
 
@@ -49,12 +50,14 @@ class CalcuLinesGame(ConnectionListener):
 
         self.board.update_info(player=self.player)
 
-    def draw(self):
-        self.board.draw()
+    def draw_all(self, existing_board_content=None):
+        existing_board_content = self.board.draw(
+            existing_board_content=existing_board_content)
         self.board.populate_neighbours_dic()
         self.board.update_info(red_score=self.red_score,
                                blue_score=self.blue_score,
                                player='')
+        return existing_board_content
 
     def update_score(self, new_calculation):
         if self.red and new_calculation:
@@ -101,14 +104,15 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_hello(self, data):
         print data['message']
-        if data['board'] == '':
-            self.board = Board(screen)
-            board = self.board
-            connection.Send({"action": "hello", "message": "Hello Server!!",
-                                            "board": board})
+        self.board = Board(screen)
+        if data['board'] == "":
+            self.existing_board_content = self.draw_all()
+            connection.Send({"action": "hello",
+                             "message": "Hello Server!!",
+                             "board": self.existing_board_content})
         else:
-            self.board = data['board']
-        self.draw()
+            self.existing_board_content = data['board']
+            self.draw_all(existing_board_content=self.existing_board_content)
 
     def Network_startgame(self, data):
         self.playing = True
@@ -249,9 +253,6 @@ class CalcuLinesGame(ConnectionListener):
     def loop(self):
         connection.Pump()
         self.Pump()
-        self.draw()
-        self.events()
-        self.draw()
         self.events()
 
 
