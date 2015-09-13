@@ -117,6 +117,11 @@ class CalcuLinesGame(ConnectionListener):
         self.whoplays = data['whoplays']
         self.board.update_info()
 
+    def Network_update(self, data):
+        self.existing_board_content = data['board']
+        for id in self.existing_board_content.keys():
+            self.board.content(id, self.existing_board_content[id][1])
+
     def Network_isturn(self, data):
         self.turn = data['turn']
 
@@ -136,10 +141,6 @@ class CalcuLinesGame(ConnectionListener):
         for i in range(1, 50):
             cell = self.board.cell[i]
             if cell.rect.colliderect(self.pointer):
-                connection.Send({"action": "myaction",
-                           "cell_id": cell.id,
-                           "pointer_x": self.pointer.x,
-                           "pointer_y": self.pointer.y})
                 if self.no_red_cells == self.no_blue_cells == 5:
                     if not self.hold:
                         if cell.colour == 'empty':
@@ -204,6 +205,12 @@ class CalcuLinesGame(ConnectionListener):
                                 self.red = not self.red
                                 self.hold = False
 
+                                # Update the board map for server
+                                self.existing_board_content[
+                                    self.previous.id][1] = None
+                                self.existing_board_content[cell.id][1] = \
+                                    self.player
+
                         elif cell.id == self.previous.id:
                             self.hold = False
                             self.board.content(
@@ -241,12 +248,20 @@ class CalcuLinesGame(ConnectionListener):
                             self.board.update_info(
                                 message='No isolated pieces!')
                             break
+                    # Update the board map for server
+                    self.existing_board_content[cell.id][1] = self.player
+
                     cell.update(self.player)
                     self.update_score(new_calculation)
                     self.red = not self.red
                     self.board.screen.blit(cell.image, cell.rect)
                     self.board.content(cell.id, player=self.player)
-
+                connection.Send({"action": "myaction",
+                                 "player" : self.player,
+                                 "cell_id": cell.id,
+                                 "pointer_x": self.pointer.x,
+                                 "pointer_y": self.pointer.y,
+                                 "board": self.existing_board_content})
     def loop(self):
         connection.Pump()
         self.Pump()

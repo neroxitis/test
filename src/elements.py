@@ -222,11 +222,11 @@ class Board(pg.Surface):
                 if existing_board_content is None:
                     cell = Cell('empty', pos, (x, y))
                     self.add_cell(cell, x, y)
-                    board_content.update({cell.id: cell.operation})
+                    board_content.update({cell.id: [cell.operation, None]})
                 else:
                     id = x*7+y+1
                     cell = Cell('empty', pos, (x, y),
-                                operation=existing_board_content[id])
+                                operation=existing_board_content[id][0])
                     self.add_cell(cell, x, y)
                 self.screen.blit(cell.image, cell.rect)
                 self.content(cell.id)
