@@ -9,9 +9,6 @@ from elements import NEIGHBOURS, Board, screen
 
 pg.display.set_caption("CalcuLines")
 
-pg.init()
-pg.font.init()
-
 
 class CalcuLinesGame(ConnectionListener):
 
