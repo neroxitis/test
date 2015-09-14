@@ -119,8 +119,16 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_update(self, data):
         self.existing_board_content = data['board']
-        for id in self.existing_board_content.keys():
-            self.board.content(id, self.existing_board_content[id][1])
+        for id, value in self.existing_board_content.items():
+            cell = self.board.cell[id]
+            player = value[1]
+            if player is None:
+                cell.update('empty')
+            else:
+                cell.update(player)
+            self.board.screen.blit(cell.image, cell.rect)
+            self.board.content(cell.id, player=player)
+
 
     def Network_isturn(self, data):
         self.turn = data['turn']
