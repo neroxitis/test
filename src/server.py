@@ -15,13 +15,12 @@ class ServerChannel(Channel):
 
     def Network_myaction(self, data):
         print "myaction:", data
-        self._server.SetBoard(data['board'], update=True)
+        self._server.SetBoard(data, update=True)
 
     def Network_hello(self, data):
         print 'message=', data['message']
         if data['board'] != '':
-            board = data['board']
-            self._server.SetBoard(board)
+            self._server.SetBoard(data)
 
     def Network_mousedown(self, data):
         print 'action:', data['action']
@@ -65,12 +64,15 @@ class CalcuLinesServer(Server):
         player.Send({"action": "bye", "message": "Bye client!"})
         del self.players[player]
 
-    def SetBoard(self, board, update=False):
-        self.board = board
+    def SetBoard(self, data, update=False):
+        self.board = data['board']
         if update:
-            self.game.redplayer.Send({"action": "update", "board": self.board})
-            self.game.blueplayer.Send(
-                {"action": "update", "board": self.board})
+            self.game.redplayer.Send({"action": "update", "board": self.board,
+                                      "whoplays": data['whoplays'],
+                                      "score": data['score']})
+            self.game.blueplayer.Send({"action": "update", "board": self.board,
+                                      "whoplays": data['whoplays'],
+                                      "score": data['score']})
 
     def Launch(self):
         while True:

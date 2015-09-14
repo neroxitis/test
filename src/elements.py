@@ -60,7 +60,7 @@ class Board(pg.Surface):
         self.board_content = {}
 
     def update_info(self, red_score=None, blue_score=None, message=None,
-                     player=None):
+                     isturn=None, player=None):
         if red_score is not None:
             red_score_text = self.info_font.render(
                 str(red_score),
@@ -90,8 +90,8 @@ class Board(pg.Surface):
             )
             self.screen.blit(BLANKER, (660, 320))
             self.screen.blit(message_text, message_rect)
-        if player is not None:
-            if player == '' or player == 'blue':
+        if isturn:
+            if player == 'blue':
                 PLAYER.fill(COLOUR['black'])
                 self.screen.blit(PLAYER, (620, 220))
                 PLAYER.fill(COLOUR['white'])
@@ -101,6 +101,11 @@ class Board(pg.Surface):
                 self.screen.blit(PLAYER, (620, 420))
                 PLAYER.fill(COLOUR['white'])
                 self.screen.blit(PLAYER, (620, 220))
+        else:
+            PLAYER.fill(COLOUR['white'])
+            self.screen.blit(PLAYER, (620, 420))
+            PLAYER.fill(COLOUR['white'])
+            self.screen.blit(PLAYER, (620, 220))
 
     def content(self, cell_id, player=None):
         cell = self.cell[cell_id]
