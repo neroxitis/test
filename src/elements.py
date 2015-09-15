@@ -90,8 +90,8 @@ class Board(pg.Surface):
             )
             self.screen.blit(BLANKER, (660, 320))
             self.screen.blit(message_text, message_rect)
-        if isturn:
-            if player == 'blue':
+        if isturn is not None:
+            if player == 'red':
                 PLAYER.fill(COLOUR['black'])
                 self.screen.blit(PLAYER, (620, 220))
                 PLAYER.fill(COLOUR['white'])

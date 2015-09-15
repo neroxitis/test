@@ -67,12 +67,17 @@ class CalcuLinesServer(Server):
     def SetBoard(self, data, update=False):
         self.board = data['board']
         if update:
-            self.game.redplayer.Send({"action": "update", "board": self.board,
+            print(data['whoplays'], data['score_info'])
+            self.game.redplayer.Send({"action": "update",
+                                      "board": data['board'],
                                       "whoplays": data['whoplays'],
-                                      "score": data['score']})
-            self.game.blueplayer.Send({"action": "update", "board": self.board,
+                                      "score_info": data['score_info'],
+                                      "no_cells": data['no_cells']})
+            self.game.blueplayer.Send({"action": "update",
+                                       "board": data['board'],
                                       "whoplays": data['whoplays'],
-                                      "score": data['score']})
+                                      "score_info": data['score_info'],
+                                      "no_cells": data['no_cells']})
 
     def Launch(self):
         while True:

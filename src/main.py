@@ -53,11 +53,11 @@ class CalcuLinesGame(ConnectionListener):
         return existing_board_content
 
     def update_score(self, score_info):
-        player, new_calculation = score_info
-        if player == 'red' and new_calculation:
-            self.red_score = eval(str(self.red_score)+new_calculation)
-        elif player == 'blue' and new_calculation:
-            self.blue_score = eval(str(self.blue_score)+new_calculation)
+        player, calculation = score_info
+        if player == 'red' and calculation:
+            self.red_score = eval(str(self.red_score)+calculation)
+        elif player == 'blue' and calculation:
+            self.blue_score = eval(str(self.blue_score)+calculation)
         self.board.update_info(red_score=self.red_score,
                                blue_score=self.blue_score,
                                message="",
@@ -113,6 +113,7 @@ class CalcuLinesGame(ConnectionListener):
     def Network_update(self, data):
         self.existing_board_content = data['board']
         self.turn = True if self.player == data['whoplays'] else False
+        self.no_red_cells, self.no_blue_cells = data['no_cells']
         for id, value in self.existing_board_content.items():
             cell = self.board.cell[id]
             player = value[1]
@@ -122,10 +123,7 @@ class CalcuLinesGame(ConnectionListener):
                 cell.update(player)
             self.board.screen.blit(cell.image, cell.rect)
             self.board.content(cell.id, player=player)
-        self.update_score(data['score'])
-
-    def Network_isturn(self, data):
-        self.turn = data['turn']
+        self.update_score(data['score_info'])
 
     def Network_bye(self, data):
         print data['message']
@@ -138,6 +136,8 @@ class CalcuLinesGame(ConnectionListener):
         sys.exit()
 
     def mouse_button_down(self):
+        if not self.turn:
+            return
         self.board.update_info(message="", player=self.player,
                                isturn=self.turn)
         self.pointer.x, self.pointer.y = pg.mouse.get_pos()
@@ -201,10 +201,6 @@ class CalcuLinesGame(ConnectionListener):
                                                        cell.rect)
                                 self.board.content(cell.id,
                                                    player=self.player)
-                                new_calculation = cell.operation
-
-                                self.update_score((self.player,
-                                                   new_calculation))
 
                                 self.hold = False
 
@@ -238,7 +234,6 @@ class CalcuLinesGame(ConnectionListener):
                         if (self.no_red_cells == 0 or
                                 own_neighbours >= 1):
                             self.no_red_cells += 1
-                            new_calculation = cell.operation
                         else:
                             self.board.update_info(
                                 message='No isolated pieces!')
@@ -247,7 +242,6 @@ class CalcuLinesGame(ConnectionListener):
                         if (self.no_blue_cells == 0 or
                                 own_neighbours >= 1):
                             self.no_blue_cells += 1
-                            new_calculation = cell.operation
                         else:
                             self.board.update_info(
                                 message='No isolated pieces!')
@@ -262,8 +256,8 @@ class CalcuLinesGame(ConnectionListener):
         self.events()
 
     def update_everything(self, cell):
+        print(self.no_red_cells, self.no_blue_cells)
         cell.update(self.player)
-        self.update_score((self.player, cell.operation))
         self.board.screen.blit(cell.image, cell.rect)
         self.board.content(cell.id, player=self.player)
         self.turn = False
@@ -274,11 +268,9 @@ class CalcuLinesGame(ConnectionListener):
                          "pointer_y": self.pointer.y,
                          "board": self.existing_board_content,
                          "whoplays": 'red'
-                         if self.player=='blue' else 'blue',
-                         "score": (cell.operation,
-                                   self.blue_score
-                                   if self.player == 'red' else
-                                   self.red_score)})
+                         if self.player == 'blue' else 'blue',
+                         "score_info": (self.player, cell.operation),
+                         "no_cells": (self.no_red_cells, self.no_blue_cells)})
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
