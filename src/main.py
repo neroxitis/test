@@ -20,6 +20,7 @@ class CalcuLinesGame(ConnectionListener):
         self.pointer_mask.set_at((0, 0), 1)
         self.no_red_cells = 0
         self.no_blue_cells = 0
+        self.scores = {}
         self.red_score = 0
         self.blue_score = 0
         self.hold = False
@@ -79,8 +80,9 @@ class CalcuLinesGame(ConnectionListener):
             self.Pump()
 
             for event in pg.event.get():
-                if event.type == QUIT:
-                    self.exit()
+                if event.type == KEYUP:
+                    if event.key == K_F1:
+                        self.exit()
 
                 if event.type == MOUSEBUTTONDOWN:
                     self.mouse_button_down()
@@ -128,11 +130,11 @@ class CalcuLinesGame(ConnectionListener):
         print data['message']
 
     def Network_close(self, data):
-        exit()
+        pg.quit()
+        sys.exit()
 
     def exit(self):
         connection.Send({"action": "exit"})
-        sys.exit()
 
     def mouse_button_down(self):
         if not self.turn:

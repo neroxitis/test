@@ -9,6 +9,7 @@ class ServerChannel(Channel):
         Channel.__init__(self, *args, **kwargs)
 
     def Close(self):
+        print 'Bye bye server!'
         self._server.DeletePlayer(self)
 
     # Callbacks #########################################
@@ -53,7 +54,6 @@ class CalcuLinesServer(Server):
                                          "You will be the " + player_colour +
                                          " player.",
                               "board": ""})
-
         else:
             # Need to dismiss more clients.
             return
