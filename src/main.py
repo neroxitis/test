@@ -1,7 +1,6 @@
 import pygame as pg
 from pygame.locals import *
 import sys
-import copy
 from PodSixNet.Connection import ConnectionListener, connection
 from time import sleep
 
