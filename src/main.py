@@ -1,13 +1,12 @@
 import pygame as pg
 from pygame.locals import *
 import sys
+import copy
 from PodSixNet.Connection import ConnectionListener, connection
 from time import sleep
 
-from elements import Board, NEIGHBOURS
+from elements import NEIGHBOURS, Board, screen
 
-pg.init()
-screen = pg.display.set_mode((900, 640), 0, 32)
 pg.display.set_caption("CalcuLines")
 
 
@@ -15,6 +14,7 @@ class CalcuLinesGame(ConnectionListener):
 
     def __init__(self, host, port):
 
+        self.screen = pg.display.set_mode((900, 640), 0, 32)
         left, top = pg.mouse.get_pos()
         self.pointer = pg.Rect(left, top, 1, 1)
         self.pointer_mask = pg.mask.Mask((1, 1))
@@ -23,30 +23,46 @@ class CalcuLinesGame(ConnectionListener):
         self.no_blue_cells = 0
         self.red_score = 0
         self.blue_score = 0
-        self.red = True
         self.hold = False
         self.previous = None
-        self.board = Board(screen)
+        self.board = None
         self.player = None
+        self.playing = False
+        self.existing_board_content = None
 
         self.Connect((host, port))
 
-    def draw(self):
-        self.board.draw()
+        while not self.playing:
+            self.Pump()
+            connection.Pump()
+            sleep(0.01)
+
+        if self.turn:
+            print("It's your turn!")
+        else:
+            print("Wait for your opponents turn!")
+
+        self.board.update_info(isturn=self.turn, player=self.player)
+
+    def draw_all(self, existing_board_content=None):
+        existing_board_content = self.board.draw(
+            existing_board_content=existing_board_content)
         self.board.populate_neighbours_dic()
         self.board.update_info(red_score=self.red_score,
-                               blue_score=self.blue_score,
-                               player='')
+                               blue_score=self.blue_score)
+        return existing_board_content
 
-    def update_score(self, new_calculation):
-        if self.red and new_calculation:
-            self.red_score = eval(str(self.red_score)+new_calculation)
-        elif not self.red and new_calculation:
-            self.blue_score = eval(str(self.blue_score)+new_calculation)
+    def update_score(self, score_info):
+        player, calculation = score_info
+        if player == 'red' and calculation:
+            self.red_score = eval(str(self.red_score)+calculation)
+        elif player == 'blue' and calculation:
+            self.blue_score = eval(str(self.blue_score)+calculation)
         self.board.update_info(red_score=self.red_score,
                                blue_score=self.blue_score,
                                message="",
-                               player='red' if self.red else 'blue')
+                               isturn=self.turn,
+                               player=player)
 
     def somebody_won(self):
         if self.red_score == 100:
@@ -67,11 +83,6 @@ class CalcuLinesGame(ConnectionListener):
                 if event.type == QUIT:
                     self.exit()
 
-                if self.red:
-                    self.player = "red"
-                else:
-                    self.player = "blue"
-
                 if event.type == MOUSEBUTTONDOWN:
                     self.mouse_button_down()
 
@@ -83,24 +94,56 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_hello(self, data):
         print data['message']
+        self.board = Board(screen)
+        if data['board'] == "":
+            self.existing_board_content = self.draw_all()
+            connection.Send({"action": "hello",
+                             "message": "Hello Server!!",
+                             "board": self.existing_board_content})
+        else:
+            self.existing_board_content = data['board']
+            self.draw_all(existing_board_content=self.existing_board_content)
+
+    def Network_startgame(self, data):
+        self.playing = True
+        self.player = data["player"]
+        self.turn = True if self.player == data['whoplays'] else False
+        self.board.update_info(isturn=self.turn)
+
+    def Network_update(self, data):
+        self.existing_board_content = data['board']
+        self.turn = True if self.player == data['whoplays'] else False
+        self.no_red_cells, self.no_blue_cells = data['no_cells']
+        for id, value in self.existing_board_content.items():
+            cell = self.board.cell[id]
+            player = value[1]
+            if player is None:
+                cell.update('empty')
+            else:
+                cell.update(player)
+            self.board.screen.blit(cell.image, cell.rect)
+            self.board.content(cell.id, player=player)
+        self.update_score(data['score_info'])
 
     def Network_bye(self, data):
         print data['message']
+
+    def Network_close(self, data):
+        exit()
 
     def exit(self):
         connection.Send({"action": "exit"})
         sys.exit()
 
     def mouse_button_down(self):
-        self.board.update_info(message="")
+        if not self.turn:
+            return
+        self.board.update_info(message="", player=self.player,
+                               isturn=self.turn)
         self.pointer.x, self.pointer.y = pg.mouse.get_pos()
         for i in range(1, 50):
             cell = self.board.cell[i]
             if cell.rect.colliderect(self.pointer):
-                connection.Send({"action": "myaction",
-                           "cell_id": cell.id,
-                           "pointer_x": self.pointer.x,
-                           "pointer_y": self.pointer.y})
                 if self.no_red_cells == self.no_blue_cells == 5:
                     if not self.hold:
                         if cell.colour == 'empty':
@@ -158,12 +201,15 @@ class CalcuLinesGame(ConnectionListener):
                                                        cell.rect)
                                 self.board.content(cell.id,
                                                    player=self.player)
-                                new_calculation = cell.operation
 
-                                self.update_score(new_calculation)
-
-                                self.red = not self.red
                                 self.hold = False
+
+                                # Update the board map for server
+                                self.existing_board_content[
+                                    self.previous.id][1] = None
+                                self.existing_board_content[cell.id][1] = \
+                                    self.player
+                                self.update_everything(cell)
 
                         elif cell.id == self.previous.id:
                             self.hold = False
@@ -184,11 +230,10 @@ class CalcuLinesGame(ConnectionListener):
                         [1 for neighbour in NEIGHBOURS[cell.id]
                          if self.board.cell[
                             neighbour].colour == self.player])
-                    if self.red:
+                    if self.player == 'red':
                         if (self.no_red_cells == 0 or
                                 own_neighbours >= 1):
                             self.no_red_cells += 1
-                            new_calculation = cell.operation
                         else:
                             self.board.update_info(
                                 message='No isolated pieces!')
@@ -197,23 +242,35 @@ class CalcuLinesGame(ConnectionListener):
                         if (self.no_blue_cells == 0 or
                                 own_neighbours >= 1):
                             self.no_blue_cells += 1
-                            new_calculation = cell.operation
                         else:
                             self.board.update_info(
                                 message='No isolated pieces!')
                             break
-                    cell.update(self.player)
-                    self.update_score(new_calculation)
-                    self.red = not self.red
-                    self.board.screen.blit(cell.image, cell.rect)
-                    self.board.content(cell.id, player=self.player)
+                    # Update the board map for server
+                    self.existing_board_content[cell.id][1] = self.player
 
+                    self.update_everything(cell)
     def loop(self):
-        self.Pump()
         connection.Pump()
-        self.draw()
+        self.Pump()
         self.events()
 
+    def update_everything(self, cell):
+        print(self.no_red_cells, self.no_blue_cells)
+        cell.update(self.player)
+        self.board.screen.blit(cell.image, cell.rect)
+        self.board.content(cell.id, player=self.player)
+        self.turn = False
+        connection.Send({"action": "myaction",
+                         "player" : self.player,
+                         "cell_id": cell.id,
+                         "pointer_x": self.pointer.x,
+                         "pointer_y": self.pointer.y,
+                         "board": self.existing_board_content,
+                         "whoplays": 'red'
+                         if self.player == 'blue' else 'blue',
+                         "score_info": (self.player, cell.operation),
+                         "no_cells": (self.no_red_cells, self.no_blue_cells)})
 
 if __name__ == '__main__':
     if len(sys.argv) != 2:
@@ -222,7 +279,7 @@ if __name__ == '__main__':
     else:
         host, port = sys.argv[1].split(":")
         clgame = CalcuLinesGame(host, int(port))
-        connection.Send({"action": "hello", "message": "Hello Server!!"})
+
         while True:
             clgame.loop()
             sleep(0.001)
