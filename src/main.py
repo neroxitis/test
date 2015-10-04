@@ -251,6 +251,7 @@ class CalcuLinesGame(ConnectionListener):
                     self.existing_board_content[cell.id][1] = self.player
 
                     self.update_everything(cell)
+
     def loop(self):
         connection.Pump()
         self.Pump()
@@ -263,7 +264,7 @@ class CalcuLinesGame(ConnectionListener):
         self.board.content(cell.id, player=self.player)
         self.turn = False
         connection.Send({"action": "myaction",
-                         "player" : self.player,
+                         "player": self.player,
                          "cell_id": cell.id,
                          "pointer_x": self.pointer.x,
                          "pointer_y": self.pointer.y,

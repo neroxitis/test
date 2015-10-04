@@ -27,6 +27,7 @@ pg.init()
 pg.font.init()
 screen = pg.display.set_mode((900, 640), 0, 32)
 
+
 class Cell(pg.sprite.Sprite):
     """ The ball """
     def __init__(self, colour, coord, pos, operation=None):
@@ -37,7 +38,7 @@ class Cell(pg.sprite.Sprite):
         self.colour = colour
         self.update(colour)
         self.operation = operation or \
-                         OPERATORS[randint(0, 3)] + str(randint(1, 10))
+            OPERATORS[randint(0, 3)] + str(randint(1, 10))
 
     def update(self, colour):
         self.colour = colour
@@ -60,7 +61,7 @@ class Board(pg.Surface):
         self.board_content = {}
 
     def update_info(self, red_score=None, blue_score=None, message=None,
-                     isturn=None, player=None):
+                    isturn=None, player=None):
         if red_score is not None:
             red_score_text = self.info_font.render(
                 str(red_score),
@@ -215,7 +216,6 @@ class Board(pg.Surface):
             pos[0] = 574
             pos[1] += 84
             diag_len -= 87
-
 
         # Draw cells
         if existing_board_content is None:

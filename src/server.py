@@ -50,10 +50,10 @@ class CalcuLinesServer(Server):
             self.game.players[channel] = {'online': True,
                                           'colour': player_colour}
             channel.Send({"action": "hello",
-                              "message": "Welcome to CalcuLines! "
-                                         "You will be the " + player_colour +
-                                         " player.",
-                              "board": ""})
+                          "message": "Welcome to CalcuLines! "
+                                     "You will be the " + player_colour +
+                                     " player.",
+                          "board": ""})
         else:
             # Need to dismiss more clients.
             return
