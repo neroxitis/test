@@ -154,7 +154,7 @@ class CalcuLinesGame(ConnectionListener):
         for i in range(1, 50):
             cell = self.board.cell[i]
             if cell.rect.colliderect(self.pointer):
-                if not bool([v for v in self.no_cells.values() if v != 5]):
+                if not any(v != 5 for v in self.no_cells.values()):
                     if not self.hold:
                         if cell.colour == 'empty':
                             self.board.update_info(
