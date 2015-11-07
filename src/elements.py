@@ -96,7 +96,6 @@ class Board(pg.Surface):
                 player.calculate_top_distance(self.no_players)
                 self.players.append(player)
 
-
         if new_player is not None:
             idx = len(self.players)
             player = PlayerStatus(new_player, idx)
@@ -132,7 +131,6 @@ class Board(pg.Surface):
                     PLAYER.fill(COLOUR['black'])
                 self.screen.blit(PLAYER,
                                  (620, player.top_distance))
-
 
     def content(self, cell_id, player=None):
         cell = self.cell[cell_id]

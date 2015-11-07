@@ -106,9 +106,9 @@ class CalcuLinesGame(ConnectionListener):
 
     def Network_newplayer(self, data):
         new_player_colour = data['colour']
-        print "New player is online with", new_player_colour,"colour !"
+        print "New player is online with", new_player_colour, "colour !"
         self.players.append(new_player_colour)
-        self.board.update_info(new_player = new_player_colour)
+        self.board.update_info(new_player=new_player_colour)
         self.scores.update({new_player_colour: 0})
         self.no_cells.update({new_player_colour: 0})
 
