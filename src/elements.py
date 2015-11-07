@@ -2,14 +2,18 @@ import pygame as pg
 from random import randint
 
 BOARD_SIZE = 7
+SCREEN_WIDTH = 900
+SCREEN_HEIGHT = 640
 CIRCLE_DIAM = 60
 SEGMENT_TARGET = [3, 28]
 GAME_HEIGHT = CIRCLE_DIAM*BOARD_SIZE
 GAME_WIDTH = CIRCLE_DIAM*BOARD_SIZE
+SCORE_DISTANCE = 100
 COLOUR = {'red': (255, 0, 0),
           'blue': (0, 0, 255),
-          'white': (255, 255, 255),
           'green': (0, 255, 0),
+          'yellow': (255, 255, 0),
+          'white': (255, 255, 255),
           'black': (0, 0, 0),
           'grey': (180, 180, 180)}
 IMAGE = {'red': pg.image.load(
@@ -25,11 +29,22 @@ PLAYER = pg.Surface((25, 25))
 
 pg.init()
 pg.font.init()
-screen = pg.display.set_mode((900, 640), 0, 32)
+screen = pg.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT), 0, 32)
+
+
+class PlayerStatus:
+    def __init__(self, colour, idx):
+        self.colour = colour
+        self.idx = idx
+        self.top_distance = None
+
+    def calculate_top_distance(self, no_players):
+        vertical_margin = (SCREEN_HEIGHT-(no_players+1)*SCORE_DISTANCE)/2
+        self.top_distance = vertical_margin+self.idx*SCORE_DISTANCE
 
 
 class Cell(pg.sprite.Sprite):
-    """ The ball """
+    """ The Cell """
     def __init__(self, colour, coord, pos, operation=None):
         pg.sprite.Sprite.__init__(self)
         self.id = 0
@@ -59,54 +74,60 @@ class Board(pg.Surface):
         self.info_font = pg.font.SysFont(None, 40)
         BLANKER.fill(COLOUR['white'])
         self.board_content = {}
+        self.no_players = 0
+        self.players = []
 
-    def update_info(self, red_score=None, blue_score=None, message=None,
-                    isturn=None, player=None):
-        if red_score is not None:
-            red_score_text = self.info_font.render(
-                str(red_score),
-                True,
-                COLOUR['red'],
-                COLOUR['white'])
-            red_score_rect = red_score_text.get_rect(
-                left=660, top=220
-            )
-            self.screen.blit(BLANKER, (660, 220))
-            self.screen.blit(red_score_text, red_score_rect)
-        if blue_score is not None:
-            blue_score_text = self.info_font.render(
-                str(blue_score),
-                True,
-                COLOUR['blue'],
-                COLOUR['white'])
-            blue_score_rect = blue_score_text.get_rect(
-                left=660, top=420
-            )
-            self.screen.blit(BLANKER, (660, 420))
-            self.screen.blit(blue_score_text, blue_score_rect)
+    def get_vertical_top_distance(self):
+        vertical_margin = (SCREEN_HEIGHT-(self.no_players+1)*SCORE_DISTANCE)/2
+        return vertical_margin + self.no_players*SCORE_DISTANCE
+
+    def update_info(self, scores=None, message=None,
+                    isturn=None, playertoplay=None, players=None,
+                    new_player=None):
+        if players is not None:
+            self.no_players = len(players)
+            for idx, colour in enumerate(players):
+                player = PlayerStatus(colour, idx)
+                player.calculate_top_distance(self.no_players)
+                self.players.append(player)
+
+
+        if new_player is not None:
+            idx = len(self.players)
+            player = PlayerStatus(new_player, idx)
+            player.calculate_top_distance(idx)
+            self.players.append(player)
+
+        if scores is not None:
+            for player in self.players:
+                score = scores[player.colour]
+                score_text = self.info_font.render(
+                    str(score),
+                    True,
+                    COLOUR[player.colour],
+                    COLOUR['white'])
+                score_rect = score_text.get_rect(
+                    left=660, top=player.top_distance
+                )
+                self.screen.blit(BLANKER, (660, player.top_distance))
+                self.screen.blit(score_text, score_rect)
         if message is not None:
             message_text = self.font.render(message, True, COLOUR['black'])
+            max_top_distance = self.get_vertical_top_distance()
             message_rect = message_text.get_rect(
-                left=660, top=320
+                left=660, top=max_top_distance
             )
-            self.screen.blit(BLANKER, (660, 320))
+            self.screen.blit(BLANKER, (660, max_top_distance))
             self.screen.blit(message_text, message_rect)
         if isturn is not None:
-            if player == 'red':
-                PLAYER.fill(COLOUR['black'])
-                self.screen.blit(PLAYER, (620, 220))
-                PLAYER.fill(COLOUR['white'])
-                self.screen.blit(PLAYER, (620, 420))
-            else:
-                PLAYER.fill(COLOUR['black'])
-                self.screen.blit(PLAYER, (620, 420))
-                PLAYER.fill(COLOUR['white'])
-                self.screen.blit(PLAYER, (620, 220))
-        else:
-            PLAYER.fill(COLOUR['white'])
-            self.screen.blit(PLAYER, (620, 420))
-            PLAYER.fill(COLOUR['white'])
-            self.screen.blit(PLAYER, (620, 220))
+            for player in self.players:
+                if player.colour != playertoplay:
+                    PLAYER.fill(COLOUR['white'])
+                else:
+                    PLAYER.fill(COLOUR['black'])
+                self.screen.blit(PLAYER,
+                                 (620, player.top_distance))
+
 
     def content(self, cell_id, player=None):
         cell = self.cell[cell_id]

@@ -1,7 +1,8 @@
+import sys
+from time import sleep
+
 from PodSixNet.Channel import Channel
 from PodSixNet.Server import Server
-from time import sleep
-import sys
 
 
 class ServerChannel(Channel):
@@ -31,7 +32,7 @@ class ServerChannel(Channel):
 
 class CalcuLinesServer(Server):
     channelClass = ServerChannel
-    player_colours = ["blue", "red"]
+    player_colours = ["yellow", "green", "blue", "red"]
 
     def __init__(self, *args, **kwargs):
         self.id = 0
@@ -40,28 +41,41 @@ class CalcuLinesServer(Server):
         print 'CalcuLines Server launched!'
         self.game = None
         self.board = None
+        self.players = []
 
     def Connected(self, channel, addr):
         if self.game is None:
-            self.game = Game(channel)
-        if len(self.game.players) < self.no_players:
+            self.game = Game()
+        if len(self.game.players) <= self.no_players:
             print 'new connection:', channel
             player_colour = self.player_colours.pop()
             self.game.players[channel] = {'online': True,
                                           'colour': player_colour}
+            if len(self.game.players) == 1:
+                board = ""
+            else:
+                board = self.board
             channel.Send({"action": "hello",
+                          "colour": player_colour,
                           "message": "Welcome to CalcuLines! "
                                      "You will be the " + player_colour +
                                      " player.",
-                          "board": ""})
+                          "restplayers": self.players,
+                          "board": board})
+            self.players.append(player_colour)
+            for player in self.game.players:
+                player.Send({"action": "newplayer",
+                             "colour": player_colour})
         else:
             # Need to dismiss more clients.
             return
         if len(self.game.players) == self.no_players:
             for player, status in self.game.players.items():
-                player.Send({"action": "startgame",
-                             "player": status['colour'],
-                             "whoplays": "red"})
+                if status['online']:
+                    player.Send({"action": "startgame",
+                                 "players": self.players,
+                                 "player": status['colour'],
+                                 "whoplays": "red"})
 
     def DeletePlayer(self, player):
         print 'player with id', str(player.address), 'has left the game.'
@@ -86,7 +100,7 @@ class CalcuLinesServer(Server):
 
 
 class Game:
-    def __init__(self, redplayer):
+    def __init__(self):
         # 'red' or 'blue'
         self.turn = 'red'
         self.players = {}
@@ -94,7 +108,7 @@ class Game:
 # Get command line argument of server, port
 if len(sys.argv) != 3:
     print "Usage:", sys.argv[0], "host:port players:number"
-    print "e.g.", sys.argv[0], "localhost:12345 players"
+    print "e.g.", sys.argv[0], "localhost:12345 players:3"
     print ""
 else:
     host, port = sys.argv[1].split(":")
