@@ -4,11 +4,11 @@ from random import randint
 BOARD_SIZE = 7
 SCREEN_WIDTH = 900
 SCREEN_HEIGHT = 640
+VERTICAL_MARGIN = 100
 CIRCLE_DIAM = 60
 SEGMENT_TARGET = [3, 28]
 GAME_HEIGHT = CIRCLE_DIAM*BOARD_SIZE
 GAME_WIDTH = CIRCLE_DIAM*BOARD_SIZE
-SCORE_DISTANCE = 100
 COLOUR = {'red': (255, 0, 0),
           'blue': (0, 0, 255),
           'green': (0, 255, 0),
@@ -44,8 +44,8 @@ class PlayerStatus:
         self.top_distance = None
 
     def calculate_top_distance(self, no_players):
-        vertical_margin = (SCREEN_HEIGHT-(no_players+1)*SCORE_DISTANCE)/2
-        self.top_distance = vertical_margin+self.idx*SCORE_DISTANCE
+        score_distance = (SCREEN_HEIGHT-2*VERTICAL_MARGIN)/(no_players)
+        self.top_distance = VERTICAL_MARGIN + self.idx*score_distance
 
 
 class Cell(pg.sprite.Sprite):
@@ -81,26 +81,34 @@ class Board(pg.Surface):
         self.board_content = {}
         self.no_players = 0
         self.players = []
+        self.score_distance = 200
 
-    def get_vertical_top_distance(self):
-        vertical_margin = (SCREEN_HEIGHT-(self.no_players+1)*SCORE_DISTANCE)/2
-        return vertical_margin + self.no_players*SCORE_DISTANCE
+    def get_distances(self):
+        self.score_distance = (
+            (SCREEN_HEIGHT-2*VERTICAL_MARGIN)/(self.no_players+1)
+        )
+        return VERTICAL_MARGIN + self.no_players*self.score_distance
 
     def update_info(self, scores=None, message=None,
                     isturn=None, playertoplay=None, players=None,
                     new_player=None):
         if players is not None:
-            self.no_players = len(players)
+            no_players = len(players)
             for idx, colour in enumerate(players):
                 player = PlayerStatus(colour, idx)
-                player.calculate_top_distance(self.no_players)
+                player.calculate_top_distance(no_players)
                 self.players.append(player)
 
         if new_player is not None:
-            idx = len(self.players)
-            player = PlayerStatus(new_player, idx)
-            player.calculate_top_distance(idx)
+            no_players=len(self.players)
+            player = PlayerStatus(new_player, no_players)
             self.players.append(player)
+            no_players += 1
+            for player in self.players:
+                player.calculate_top_distance(no_players)
+                print('distance for', player.colour, 'player=',
+                      player.top_distance)
+            print(no_players)
 
         if scores is not None:
             for player in self.players:
@@ -117,7 +125,7 @@ class Board(pg.Surface):
                 self.screen.blit(score_text, score_rect)
         if message is not None:
             message_text = self.font.render(message, True, COLOUR['black'])
-            max_top_distance = self.get_vertical_top_distance()
+            max_top_distance = self.get_distances()
             message_rect = message_text.get_rect(
                 left=660, top=max_top_distance
             )
@@ -129,8 +137,7 @@ class Board(pg.Surface):
                     PLAYER.fill(COLOUR['white'])
                 else:
                     PLAYER.fill(COLOUR['black'])
-                self.screen.blit(PLAYER,
-                                 (620, player.top_distance))
+                self.screen.blit(PLAYER, (620, player.top_distance))
 
     def content(self, cell_id, player=None):
         cell = self.cell[cell_id]
