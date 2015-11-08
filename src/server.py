@@ -24,9 +24,6 @@ class ServerChannel(Channel):
         if data['board'] != '':
             self._server.SetBoard(data)
 
-    def Network_mousedown(self, data):
-        print 'action:', data['action']
-
     # ###################################################
 
 
@@ -73,8 +70,6 @@ class CalcuLinesServer(Server):
             for player, status in self.game.players.items():
                 if status['online']:
                     player.Send({"action": "startgame",
-                                 "players": self.players,
-                                 "player": status['colour'],
                                  "whoplays": "red"})
 
     def DeletePlayer(self, player):

@@ -44,7 +44,7 @@ class PlayerStatus:
         self.top_distance = None
 
     def calculate_top_distance(self, no_players):
-        score_distance = (SCREEN_HEIGHT-2*VERTICAL_MARGIN)/(no_players)
+        score_distance = (SCREEN_HEIGHT-2*VERTICAL_MARGIN)/no_players
         self.top_distance = VERTICAL_MARGIN + self.idx*score_distance
 
 
@@ -87,10 +87,10 @@ class Board(pg.Surface):
         self.score_distance = (
             (SCREEN_HEIGHT-2*VERTICAL_MARGIN)/(self.no_players+1)
         )
-        return VERTICAL_MARGIN + self.no_players*self.score_distance
+        return VERTICAL_MARGIN + (self.no_players+1)*self.score_distance
 
     def update_info(self, scores=None, message=None,
-                    isturn=None, playertoplay=None, players=None,
+                    checkturn=None, playertoplay=None, players=None,
                     new_player=None):
         if players is not None:
             no_players = len(players)
@@ -106,9 +106,6 @@ class Board(pg.Surface):
             no_players += 1
             for player in self.players:
                 player.calculate_top_distance(no_players)
-                print('distance for', player.colour, 'player=',
-                      player.top_distance)
-            print(no_players)
 
         if scores is not None:
             for player in self.players:
@@ -131,7 +128,7 @@ class Board(pg.Surface):
             )
             self.screen.blit(BLANKER, (660, max_top_distance))
             self.screen.blit(message_text, message_rect)
-        if isturn is not None:
+        if checkturn:
             for player in self.players:
                 if player.colour != playertoplay:
                     PLAYER.fill(COLOUR['white'])
