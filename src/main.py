@@ -36,13 +36,13 @@ class CalcuLinesGame(ConnectionListener):
             connection.Pump()
             sleep(0.01)
 
-        self.board.update_info(checkturn=True, playertoplay='red')
+        self.board.update_info(playertoplay='red')
 
     def draw_all(self, existing_board_content=None):
         existing_board_content = self.board.draw(
             existing_board_content=existing_board_content)
         self.board.populate_neighbours_dic()
-        self.board.update_info(self.scores, players=self.players)
+        self.board.update_info(players=self.players)
         return existing_board_content
 
     def update_score(self, score_info, whoplays):
@@ -93,12 +93,12 @@ class CalcuLinesGame(ConnectionListener):
         self.board = Board(screen)
         if data['board'] == "":
             self.existing_board_content = self.draw_all()
-            connection.Send({"action": "hello",
-                             "message": "Hello Server!!",
-                             "board": self.existing_board_content})
         else:
             self.existing_board_content = data['board']
             self.draw_all(existing_board_content=self.existing_board_content)
+        connection.Send({"action": "hello",
+                         "message": "Hello Server!!",
+                         "board": self.existing_board_content})
 
     def Network_newplayer(self, data):
         new_player_colour = data['colour']

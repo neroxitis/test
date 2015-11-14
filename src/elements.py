@@ -92,42 +92,41 @@ class Board(pg.Surface):
     def update_info(self, scores=None, message=None,
                     checkturn=None, playertoplay=None, players=None,
                     new_player=None):
+
         if players is not None:
-            no_players = len(players)
             for idx, colour in enumerate(players):
                 player = PlayerStatus(colour, idx)
-                player.calculate_top_distance(no_players)
                 self.players.append(player)
 
         if new_player is not None:
-            no_players=len(self.players)
+            no_players = len(self.players)
             player = PlayerStatus(new_player, no_players)
             self.players.append(player)
             no_players += 1
-            for player in self.players:
-                player.calculate_top_distance(no_players)
 
         if scores is not None:
+            no_players = len(self.players)
             for player in self.players:
+                player.calculate_top_distance(no_players)
                 score = scores[player.colour]
                 score_text = self.info_font.render(
                     str(score),
                     True,
                     COLOUR[player.colour],
                     COLOUR['white'])
-                score_rect = score_text.get_rect(
-                    left=660, top=player.top_distance
-                )
+                score_rect = score_text.get_rect(left=660,
+                                                 top=player.top_distance)
                 self.screen.blit(BLANKER, (660, player.top_distance))
                 self.screen.blit(score_text, score_rect)
+
         if message is not None:
             message_text = self.font.render(message, True, COLOUR['black'])
             max_top_distance = self.get_distances()
-            message_rect = message_text.get_rect(
-                left=660, top=max_top_distance
-            )
+            message_rect = message_text.get_rect(left=660,
+                                                 top=max_top_distance)
             self.screen.blit(BLANKER, (660, max_top_distance))
             self.screen.blit(message_text, message_rect)
+
         if checkturn:
             for player in self.players:
                 if player.colour != playertoplay:
