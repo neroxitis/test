@@ -5,6 +5,7 @@ from PodSixNet.Connection import ConnectionListener, connection
 from time import sleep
 from collections import OrderedDict
 
+from menu import GameMenu
 from elements import NEIGHBOURS, Board, screen
 
 pg.display.set_caption("CalcuLines")
@@ -264,6 +265,10 @@ if __name__ == '__main__':
         print "Usage:", sys.argv[0], "host:port"
         print "e.g.", sys.argv[0], "localhost:12345"
     else:
+
+        gm = GameMenu(screen)
+        gm.run()
+
         host, port = sys.argv[1].split(":")
         clgame = CalcuLinesGame(host, int(port))
 
