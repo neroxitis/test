@@ -1,5 +1,4 @@
-import sys
-from inputbox import PopupBox
+from src.inputbox import PopupBox
 import pygame as pg
 from pygame.locals import *
  

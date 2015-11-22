@@ -6,7 +6,7 @@ import pygame as pg
 from pygame.locals import *
 from PodSixNet.Connection import ConnectionListener, connection
 
-from elements import NEIGHBOURS, Board, screen
+from src.elements import NEIGHBOURS, Board, screen
 
 pg.display.set_caption("CalcuLines")
 

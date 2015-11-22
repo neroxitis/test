@@ -2,9 +2,9 @@ import sys
 import subprocess
 from time import sleep
 
-from menu import GameMenu
-from game import CalcuLinesGame
-from elements import screen
+from src.menu import GameMenu
+from src.game import CalcuLinesGame
+from src.elements import screen
 
 if __name__ == '__main__':
 

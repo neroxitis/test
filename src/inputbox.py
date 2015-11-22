@@ -5,7 +5,7 @@ import string
 import pygame as pg
 from pygame.locals import *
 
-from elements import COLOUR
+from src.elements import COLOUR
 
 
 def get_key():
