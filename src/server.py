@@ -39,6 +39,7 @@ class CalcuLinesServer(Server):
         self.game = None
         self.board = None
         self.players = []
+        self.Launch()
 
     def Connected(self, channel, addr):
         if self.game is None:
@@ -100,14 +101,15 @@ class Game:
         self.turn = 'red'
         self.players = {}
 
-# Get command line argument of server, port
-if len(sys.argv) != 3:
-    print "Usage:", sys.argv[0], "host:port players:number"
-    print "e.g.", sys.argv[0], "localhost:12345 players:3"
-    print ""
-else:
-    host, port = sys.argv[1].split(":")
-    no_players = int(sys.argv[2].split(":")[1])
-    server = CalcuLinesServer(localaddr=(host, int(port)),
-                              listeners=no_players)
-    server.Launch()
+if __name__ == '__main__':
+    # Get command line argument of server, port
+    if len(sys.argv) != 3:
+        print "Usage:", sys.argv[0], "host:port players:number"
+        print "e.g.", sys.argv[0], "localhost:12345 players:3"
+        print ""
+    else:
+        host, port = sys.argv[1].split(":")
+        no_players = int(sys.argv[2].split(":")[1])
+        server = CalcuLinesServer(localaddr=(host, int(port)),
+                                  listeners=no_players)
+        server.Launch()
