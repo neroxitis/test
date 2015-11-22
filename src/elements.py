@@ -17,16 +17,11 @@ COLOUR = {'red': (255, 0, 0),
           'black': (0, 0, 0),
           'grey': (180, 180, 180)}
 IMAGE = {
-    'red': pg.image.load(
-        "/home/nikos/PycharmProjects/CalcuLines/images/red.png"),
-    'blue': pg.image.load(
-        "/home/nikos/PycharmProjects/CalcuLines/images/blue.png"),
-    'green': pg.image.load(
-        "/home/nikos/PycharmProjects/CalcuLines/images/green.png"),
-    'yellow': pg.image.load(
-        "/home/nikos/PycharmProjects/CalcuLines/images/yellow.png"),
-    'empty': pg.image.load(
-        "/home/nikos/PycharmProjects/CalcuLines/images/empty.png")}
+    'red': pg.image.load("../images/red.png"),
+    'blue': pg.image.load("../images/blue.png"),
+    'green': pg.image.load("../images/green.png"),
+    'yellow': pg.image.load("../images/yellow.png"),
+    'empty': pg.image.load("../images/empty.png")}
 OPERATORS = ['+', '-', '*', '//']
 NEIGHBOURS = {}
 BLANKER = pg.Surface((280, 30))
