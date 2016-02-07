@@ -1,12 +1,13 @@
 import sys
 from collections import OrderedDict
 from time import sleep
-
 import pygame as pg
 from pygame.locals import *
+
 from PodSixNet.Connection import ConnectionListener, connection
 
-from src.elements import NEIGHBOURS, Board, screen
+from elements import NEIGHBOURS, Board, screen
+
 
 pg.display.set_caption("CalcuLines")
 

@@ -1,5 +1,7 @@
-import pygame as pg
+import os
 from random import randint
+
+import pygame as pg
 
 BOARD_SIZE = 7
 SCREEN_WIDTH = 900
@@ -16,12 +18,15 @@ COLOUR = {'red': (255, 0, 0),
           'white': (255, 255, 255),
           'black': (0, 0, 0),
           'grey': (180, 180, 180)}
+
+fullpath = os.path.dirname(os.getcwd())
+
 IMAGE = {
-    'red': pg.image.load("../images/red.png"),
-    'blue': pg.image.load("../images/blue.png"),
-    'green': pg.image.load("../images/green.png"),
-    'yellow': pg.image.load("../images/yellow.png"),
-    'empty': pg.image.load("../images/empty.png")}
+    'red': pg.image.load(os.path.join(fullpath, 'images/red.png')),
+    'blue': pg.image.load(os.path.join(fullpath, 'images/blue.png')),
+    'green': pg.image.load(os.path.join(fullpath, 'images/green.png')),
+    'yellow': pg.image.load(os.path.join(fullpath, 'images/yellow.png')),
+    'empty': pg.image.load(os.path.join(fullpath, 'images/empty.png'))}
 OPERATORS = ['+', '-', '*', '//']
 NEIGHBOURS = {}
 BLANKER = pg.Surface((280, 30))

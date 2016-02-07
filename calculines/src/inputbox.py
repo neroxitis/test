@@ -1,11 +1,10 @@
 # Modified version of inputbox.py, originally written by Timothy Downs
 
 import string
-
 import pygame as pg
 from pygame.locals import *
 
-from src.elements import COLOUR
+from elements import COLOUR
 
 
 def get_key():

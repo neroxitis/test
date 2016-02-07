@@ -2,9 +2,10 @@ import sys
 import subprocess
 from time import sleep
 
-from src.menu import GameMenu
-from src.game import CalcuLinesGame
-from src.elements import screen
+from menu import GameMenu
+from game import CalcuLinesGame
+from elements import screen
+
 
 if __name__ == '__main__':
 
@@ -25,6 +26,7 @@ if __name__ == '__main__':
                                        'players:{}'.format(no_players)])
         elif option == 2:
             server.kill()
+            print('Calculines Server stopped!')
         elif option == 3:
             host = 'localhost'
             port = args

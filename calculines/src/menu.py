@@ -1,11 +1,17 @@
-from src.inputbox import PopupBox
+import os
+
 import pygame as pg
 from pygame.locals import *
- 
+
+from inputbox import PopupBox
+
+
 pg.init()
 
-background_image_filename = '/home/nikos/PycharmProjects/CalcuLines/images/' \
-                            'menu_background.jpg'
+fullpath = os.path.dirname(os.getcwd())
+
+background_image_filename = os.path.join(fullpath,
+                                         'images/menu_background.jpg')
 
 class MenuItem(pg.sprite.Sprite):
     def __init__(self, name, label, pos):
