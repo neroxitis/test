@@ -31,10 +31,12 @@ if __name__ == '__main__':
             host = 'localhost'
             port = args
             clgame = CalcuLinesGame(host, int(port))
-            while True:
-                clgame.loop_events()
+            playing = True
+            while playing:
+                playing = clgame.loop_events()
                 sleep(0.001)
-
         elif option == 4:
             menu = False
+            if server:
+                server.kill()
     sys.exit()

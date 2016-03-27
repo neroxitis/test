@@ -74,9 +74,14 @@ class CalcuLinesServer(Server):
                                  "whoplays": "red"})
 
     def DeletePlayer(self, player):
-        print 'player with id', str(player.address), 'has left the game.'
-        player.Send({"action": "bye", "message": "Bye client!"})
-        del self.players[player]
+        print 'player with id', str(player.addr), 'has left the game.'
+        player.Send({"action": "message", "message": "Bye client!"})
+        self.player_colours.append(self.game.players[player]['colour'])
+        self.players.pop()
+        del self.game.players[player]
+        for player in self.game.players:
+            player.Send({"action": "forcequit"})
+
 
     def SetBoard(self, data, update=False):
         self.board = data['board']
