@@ -1,11 +1,13 @@
+import sys
+from collections import OrderedDict
+from time import sleep
 import pygame as pg
 from pygame.locals import *
-import sys
+
 from PodSixNet.Connection import ConnectionListener, connection
-from time import sleep
-from collections import OrderedDict
 
 from elements import NEIGHBOURS, Board, screen
+
 
 pg.display.set_caption("CalcuLines")
 
@@ -30,6 +32,8 @@ class CalcuLinesGame(ConnectionListener):
         self.existing_board_content = None
 
         self.Connect((host, port))
+
+        self.force_quit = False
 
         while not self.playing:
             self.Pump()
@@ -70,7 +74,7 @@ class CalcuLinesGame(ConnectionListener):
             for event in pg.event.get():
                 if event.type == KEYUP:
                     if event.key == K_F1:
-                        self.exit()
+                        self.force_quit = True
 
                 if event.type == MOUSEBUTTONDOWN:
                     self.mouse_button_down()
@@ -78,7 +82,12 @@ class CalcuLinesGame(ConnectionListener):
                 if self.somebody_won():
                     pg.display.update()
                     pg.time.delay(3000)
-                    exit()
+                    return False
+
+                if self.force_quit:
+                    self.exit_game()
+                    return False
+
                 pg.display.update()
 
     def Network_hello(self, data):
@@ -130,14 +139,13 @@ class CalcuLinesGame(ConnectionListener):
             self.board.content(cell.id, player=player)
         self.update_score(data['score_info'], data['whoplays'])
 
-    def Network_bye(self, data):
-        print data['message']
+    def Network_message(self, data):
+        print data['msg']
 
-    def Network_close(self, data):
-        pg.quit()
-        sys.exit()
+    def Network_forcequit(self, data):
+        self.force_quit = True
 
-    def exit(self):
+    def exit_game(self):
         connection.Send({"action": "exit"})
 
     def mouse_button_down(self):
@@ -259,14 +267,4 @@ class CalcuLinesGame(ConnectionListener):
                          "score_info": (self.player, cell.operation),
                          "no_cells": self.no_cells})
 
-if __name__ == '__main__':
-    if len(sys.argv) != 2:
-        print "Usage:", sys.argv[0], "host:port"
-        print "e.g.", sys.argv[0], "localhost:12345"
-    else:
-        host, port = sys.argv[1].split(":")
-        clgame = CalcuLinesGame(host, int(port))
 
-        while True:
-            clgame.loop_events()
-            sleep(0.001)
