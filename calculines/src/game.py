@@ -74,7 +74,7 @@ class CalcuLinesGame(ConnectionListener):
             for event in pg.event.get():
                 if event.type == KEYUP:
                     if event.key == K_F1:
-                        self.force_quit = True
+                        connection.Send({"action": "leave"})
 
                 if event.type == MOUSEBUTTONDOWN:
                     self.mouse_button_down()
@@ -85,7 +85,6 @@ class CalcuLinesGame(ConnectionListener):
                     return False
 
                 if self.force_quit:
-                    self.exit_game()
                     return False
 
                 pg.display.update()
@@ -140,13 +139,10 @@ class CalcuLinesGame(ConnectionListener):
         self.update_score(data['score_info'], data['whoplays'])
 
     def Network_message(self, data):
-        print data['msg']
+        print data['message']
 
     def Network_forcequit(self, data):
         self.force_quit = True
-
-    def exit_game(self):
-        connection.Send({"action": "exit"})
 
     def mouse_button_down(self):
         if not self.turn:

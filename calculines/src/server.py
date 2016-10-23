@@ -24,6 +24,9 @@ class ServerChannel(Channel):
         if data['board'] != '':
             self._server.SetBoard(data)
 
+    def Network_leave(self, data):
+        self._server.LeaveGame(self)
+
     # ###################################################
 
 
@@ -73,15 +76,26 @@ class CalcuLinesServer(Server):
                     player.Send({"action": "startgame",
                                  "whoplays": "red"})
 
-    def DeletePlayer(self, player):
-        print 'player with id', str(player.addr), 'has left the game.'
-        player.Send({"action": "message", "message": "Bye client!"})
-        self.player_colours.append(self.game.players[player]['colour'])
-        self.players.pop()
-        del self.game.players[player]
-        for player in self.game.players:
-            player.Send({"action": "forcequit"})
+    def LeaveGame(self, leaver):
+        leaver_colour = self.game.players[leaver]['colour']
+        print 'player with id {} has left the game'.format(str(leaver.addr))
+        player_message = '{} player left the game'.format(leaver_colour)
+        leaver.Send({"action": "forcequit"})
+        for player in [pl for pl in self.game.players if pl != leaver]:
+            player.Send({"action": "message",
+                         "message": player_message})
 
+    def DeletePlayer(self, quitter):
+        quitter_colour = self.game.players[quitter]['colour']
+        print 'player with id {} has quit the game'.format(str(quitter.addr))
+        player_message = '{} player has quit the game'.format(quitter_colour)
+        self.player_colours.append(quitter_colour)
+        self.players.pop()
+        del self.game.players[quitter]
+        for player in [pl for pl in self.game.players if pl != quitter]:
+            player.Send({"action": "message",
+                         "message": player_message})
+            player.Send({"action": "forcequit"})
 
     def SetBoard(self, data, update=False):
         self.board = data['board']
